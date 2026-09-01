@@ -1,0 +1,10 @@
+# Compiled binaries & object files
+*.o
+*.out
+*.exe
+test_main
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini

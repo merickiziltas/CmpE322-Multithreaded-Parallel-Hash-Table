@@ -1,0 +1,40 @@
+CMPE 322 Project 2 Report
+[Student ID]
+
+1. Manual Pages Used
+*   pthread_create: https://man7.org/linux/man-pages/man3/pthread_create.3.html
+*   pthread_join: https://man7.org/linux/man-pages/man3/pthread_join.3.html
+*   pthread_exit: https://man7.org/linux/man-pages/man3/pthread_exit.3.html
+*   pthread_mutex_init: https://man7.org/linux/man-pages/man3/pthread_mutex_init.3.html
+*   pthread_mutex_destroy: https://man7.org/linux/man-pages/man3/pthread_mutex_destroy.3.html
+*   pthread_mutex_trylock: https://man7.org/linux/man-pages/man3/pthread_mutex_lock.3.html
+*   pthread_mutex_unlock: https://man7.org/linux/man-pages/man3/pthread_mutex_unlock.3.html
+*   clock_gettime: https://man7.org/linux/man-pages/man3/clock_gettime.3.html
+*   malloc: https://man7.org/linux/man-pages/man3/malloc.3.html
+*   free: https://man7.org/linux/man-pages/man3/free.3.html
+*   rand: https://man7.org/linux/man-pages/man3/rand.3.html
+*   srand: https://man7.org/linux/man-pages/man3/srand.3.html
+
+2. Explanation of Functions
+I implemented the following functions to achieve the project goals:
+
+*   **array_allocation**: In this function, I reserved the memory space for our three main arrays: the hash table itself, the list of items we want to insert, and the locks. I also initialized a separate mutex lock for every single slot in the table. This preparation is necessary before we start any operations.
+
+*   **array_deallocation**: This function cleans up everything after we are done. I first destroyed all the mutex locks to free system resources. Then, I freed the memory for the hash table, the entry list, and the lock array. This makes sure we do not have any memory leaks.
+
+*   **sequential_h_1**: This function performs the insertion task using a single thread. It takes items one by one and uses a linear probing strategy. If a slot is full, it moves to the next one. I used `clock_gettime` here to give every item a precise timestamp when it is placed.
+
+*   **parallel_h_1**: This function manages the multi-threaded execution. First, it creates `t` threads. Each thread acts independently using the "runner_h1" logic. Inside the runner, the thread calculates an index and checks if the slot is empty *before* trying to lock it. This saves time. If the lock is acquired, I check the slot one last time to be safe, then insert the item and timestamp it.
+
+*   **parallel_h_2**: This function sets up the threads for the Double Hashing approach. The runner logic (runner_h2) is more complex here to prevent deadlocks. A thread calculates the `n/k` specific locks it needs to verify its path. It tries to acquire them one by one. If it cannot get a lock immediately, it releases *all* the locks it already holds and starts over. This guarantees that threads never get stuck waiting for each other.
+
+*   **speedup_comparison_h_1**: This function measures the performance improvement. First, I run the sequential function and measure its duration using `clock_gettime(CLOCK_MONOTONIC)`. Then, I clear the table and run the parallel function, measuring its duration the same way. Finally, I divide the sequential time by the parallel time to calculate the speedup ratio.
+
+3. Comparison of h1 and h2
+The h1 function is much faster than h2 because it only needs to grab one lock at a time, which reduces the waiting time for threads. On the other hand, h2 is safer for complex tables but slower because threads must grab many locks at once, and if they fail, they have to restart the whole process. Therefore, h1 works best for speed, while h2 ensures robust correctness in deadlock-prone situations.
+
+4. Research Topics
+I researched concurrency concepts including "Fine-Grained Locking", "Deadlock Prevention", and "Livelock". I also studied "Amdahl's Law" to understand how much faster the program can theoretically get with 4 cores.
+
+5. Chat History
+[LINK]
